@@ -1,0 +1,96 @@
+version: '3'
+services:
+  configserver:
+    image: configserver
+    container_name: configserver
+    build:
+      context: ./configserver
+      dockerfile: Dockerfile
+    ports:
+    - 8800:8800
+    environment:
+      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/savnaysin/B7_Microservices_Implementation-ConfigServer.git
+  eurekaserver:
+    image: eurekaserver
+    container_name: eurekaserver
+    build:
+      context: ./eurekaserver
+      dockerfile: Dockerfile
+    ports:
+    - 8802:8802
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://192.168.56.106:8802/eureka
+  zuulgateway:
+    image: zuulgateway
+    container_name: zuulgateway
+    build:
+      context: ./zuulgateway
+      dockerfile: Dockerfile
+    ports:
+    - 8805:8805
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://192.168.56.106:8802/eureka
+    depends_on:
+    - eurekaserver
+  price:
+    image: price
+    environment:
+    - microservices_default=192.168.56.106
+    container_name: price
+    build:
+      context: ./Price
+      dockerfile: Dockerfile
+    ports:
+    - 8804:8804
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://192.168.56.106:8802/eureka
+    depends_on:
+    - eurekaserver
+  promotions:
+    image: promotions
+    container_name: promotions
+    build:
+      context: ./Promotions
+      dockerfile: Dockerfile
+    ports:
+    - 8806:8806
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://192.168.56.106:8802/eureka
+    depends_on:
+    - eurekaserver
+  inventory:
+    image: inventory
+    container_name: inventory
+    build:
+      context: ./Inventory
+      dockerfile: Dockerfile
+    ports:
+    - 8807:8807
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://192.168.56.106:8802/eureka
+    depends_on:
+    - eurekaserver
+  product:
+    image: product
+    container_name: product
+    build:
+      context: ./product-microservice
+      dockerfile: Dockerfile
+    ports:
+    - 8803:8803
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://192.168.56.106:8802/eureka
+    depends_on:
+    - price
+  productview:
+    image: productview
+    container_name: productview
+    build:
+      context: ./productview-service
+      dockerfile: Dockerfile
+    ports:
+    - 8808:8808
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://192.168.56.106:8802/eureka
+    depends_on:
+    - product
